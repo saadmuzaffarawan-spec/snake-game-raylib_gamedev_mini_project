@@ -15,7 +15,7 @@ int main() {
     SetTargetFPS(90);
 
 
-    Vector2 playerDir = {0, -1}; // default facing up
+    Vector2 playerDir = {0, -1};
     bool torchOn = false;
 
     float x =200, y =200, radius =20;

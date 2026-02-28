@@ -1,214 +1,203 @@
 #include <raylib.h>
 #include <raymath.h>
-#include <cmath>
-enum gamestate{
-               Start,
-               Playing,
-               Over
+
+struct enemy{
+    Vector2 enemyhead;
+    Vector2 enemydir;
+    int x[100];
+    int y[100];
+    int enemylength;
 };
-int main() {
-    gamestate currentstate = Start;
-    const int screenwidth= 600;
-    const int screenheight= 1024;
-    InitWindow(screenwidth, screenheight, "My First Raylib Program"); 
-    InitAudioDevice();
-    SetTargetFPS(90);
 
+int main(){
 
-    Vector2 playerDir = {0, -1};
-    bool torchOn = false;
-
-    float x =200, y =200, radius =20;
-    float speed = 5;
-    
+    bool ate = false;
     int score = 0;
-    int health = 100;
+
+    int gridsize = 25;
+    
+    enemy Enemy;
+    
+    Enemy.enemylength = 1;
+    Enemy.enemydir = {0, 1};
+    Enemy.enemyhead = {600, 400};
+
+    for(int i = 0; i < Enemy.enemylength; i++){
+    Enemy.x[i] = Enemy.enemyhead.x;
+    Enemy.y[i] = Enemy.enemyhead.y - i * gridsize;
+    }
+
+    Vector2 snake{ 200, 200};
+
+    Vector2 direction = {1, 0};
+
+    InitWindow(1280, 720, "SNAKE GAME");
+    SetTargetFPS(144);
+
+    float x = 230;
+    float y = 430;
+
+    Vector2 food{x, y};
+
+    int mxlength= 100;
+    int length = 3;
+    int snakex[100];
+    int snakey[100];
+
+    for (int i = 0; i < length; i++) {
+    snakex[i] = snake.x - i * gridsize;
+    snakey[i] = snake.y;
+    }
+
+    float movedelay= 0.2f;
+    float timer =0;
+
+    while(!WindowShouldClose()){
+
+    float dt = GetFrameTime();
+    timer += dt;
 
     
-
-    int killS;
-    float coinx=500, coiny=500, coinr= 15;
-
-    float enemyx=100, enemyy=800, enemyr=10, espeed=2;
-
-    float bulletx, bullety, bulletr=5, bspeed=3;
-    bool bullet;
-    bullet = false;
-    
-    float obx=200, oby=300;
-    Rectangle obstacle = {obx,oby, 80,30};
-    while (!WindowShouldClose()) {  
     BeginDrawing();
-    if(currentstate == Start){
+    ClearBackground(WHITE);
 
-        ClearBackground(WHITE);
-        DrawText(TextFormat("EARTH ENCOUNTER"), 180, 400, 25, BLACK);
-        DrawText(TextFormat("  Press Enter  "), 180, 450, 25, BLACK);
 
-        if(IsKeyPressed(KEY_ENTER)){
-            currentstate = Playing;
-        }
+    for(int x = 0; x<720; x+=gridsize){
+        DrawLine(0,x, 1280, x, DARKBROWN);
     }
-    else if(currentstate== Playing){ 
-        ClearBackground(BLACK);
-        float flickerTime = 0.0f;
-flickerTime += GetFrameTime() * 10.0f;
+    
+    for(int y = 0; y<1280; y+=gridsize){
+        DrawLine(y, 0, y, 720, DARKBROWN);
+    }
 
-        if(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))  { x -= speed; playerDir = {-1, 0}; }
-if(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) { x += speed; playerDir = { 1, 0}; }
-if(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))    { y -= speed; playerDir = { 0,-1}; }
-if(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))  { y += speed; playerDir = { 0, 1}; }
+    
 
-        if (IsKeyPressed(KEY_R)) {
-        torchOn = !torchOn;
-        }
+    for(int i = 0; i<length; i++){
+    DrawRectangle(snakex[i], snakey[i], gridsize, gridsize, GREEN);
+    }
 
-        if (torchOn) {
+    for(int j = 0; j<Enemy.enemylength; j++){
+    DrawRectangle(Enemy.x[j], Enemy.y[j], gridsize, gridsize, RED);
+    }
 
-    // BASE VALUES
-    float baseLength = 220;
-    float baseWidth  = 80;
+    if(timer>=movedelay){
 
-    float lengthFlicker = sinf(flickerTime) * 15 + GetRandomValue(-5, 5);
-    float widthFlicker  = cosf(flickerTime * 1.3f) * 10;
-    float alphaFlicker  = 0.18f + (sinf(flickerTime * 2.0f) * 0.05f);
+ 
+   for(int i= length-1; i> 0; i--){
+        snakex[i] = snakex[i-1];
+        snakey[i] = snakey[i-1];
+    }
 
-    float torchLength = baseLength + lengthFlicker;
-    float torchWidth  = baseWidth  + widthFlicker;
 
-    Vector2 origin = { x, y };
+    snake.x += direction.x * gridsize;
+    snake.y += direction.y * gridsize;
 
-    Vector2 tip = {
-        x + playerDir.x * torchLength,
-        y + playerDir.y * torchLength
-    };
+    snakex[0]= snake.x;
+    snakey[0]= snake.y;
 
-    Vector2 perp = { -playerDir.y, playerDir.x };
+    for(int i = Enemy.enemylength - 1; i > 0; i--){
+    Enemy.x[i] = Enemy.x[i-1];
+    Enemy.y[i] = Enemy.y[i-1];
+    }
 
-    Vector2 left = {
-        tip.x + perp.x * torchWidth,
-        tip.y + perp.y * torchWidth
-    };
+    if(food.x > Enemy.enemyhead.x) {
+        Enemy.enemydir = {1, 0};
+    }
+    else if(food.x < Enemy.enemyhead.x) {
+        Enemy.enemydir = {-1, 0};
+    }
+    else if(food.y > Enemy.enemyhead.y) {
+        Enemy.enemydir = {0, 1};
+    }
+    else if(food.y < Enemy.enemyhead.y) {
+        Enemy.enemydir = {0, -1};
+    }
 
-    Vector2 right = {
-        tip.x - perp.x * torchWidth,
-        tip.y - perp.y * torchWidth
-    };
+    Enemy.enemyhead.x += Enemy.enemydir.x * gridsize;
+    Enemy.enemyhead.y += Enemy.enemydir.y * gridsize;
 
-    DrawTriangle(origin, left, right, Fade(ORANGE, alphaFlicker));
+    if(Enemy.enemyhead.x >= 1280) Enemy.enemyhead.x = 0;
+    if(Enemy.enemyhead.x < 0) Enemy.enemyhead.x = 1280 - gridsize;
+
+    if(Enemy.enemyhead.y >= 720) Enemy.enemyhead.y = 0;
+    if(Enemy.enemyhead.y < 0) Enemy.enemyhead.y = 720 - gridsize; 
+
+    Enemy.x[0] = Enemy.enemyhead.x;
+    Enemy.y[0] = Enemy.enemyhead.y;
+
+    timer = 0;
+    }
+
+    
+
+    if(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)){
+        direction = {-1, 0};
+    }
+    if(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)){
+        direction = {1, 0};
+    }
+    if(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)){
+        direction = {0, -1};
+    }
+    if(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)){
+        direction = {0, 1};
+    }
+
+    if(snakex[0] >= 1280) {
+    snakex[0] = 0;
+    }
+    if(snakex[0] < 0){
+     snakex[0] = 1280 - gridsize;
 }
-
-
-
-
-        if(IsKeyDown(KEY_LEFT_SHIFT))
-        {
-            speed = 8;
-        }
-        else{
-            speed =5;
-        }
-        if(IsKeyDown(KEY_SPACE))
-        {
-            speed = 0;
-        }
-
-        if(x<20) {x=20;};
-        if(y<20) {y=20;};
-        if(y> (screenheight-20)){ y= (screenheight-20);};
-        if(x> (screenwidth-20)){ x= (screenwidth-20);};
-
-        if(CheckCollisionCircles(
-            Vector2{x,y}, radius,
-            Vector2{coinx, coiny}, coinr))
-        {
-        score+=10;
-        health += 5;
-        coinx = GetRandomValue(coinr, 600-coinr);
-        coiny = GetRandomValue(coinr, 1024-coinr);
-        }
-
-        if(enemyx<(x)){ enemyx += espeed;}
-        if(enemyx>(x)){ enemyx -= espeed;}
-        if(enemyy>(y)){ enemyy -= espeed;}
-        if(enemyy<(y)){ enemyy += espeed;}
-
-        if(CheckCollisionCircles(
-            Vector2 {enemyx,enemyy}, enemyr,
-            Vector2 {x, y}, radius))
-        {
-        score -= 10;
-        health -=10;
-        enemyx = GetRandomValue(enemyr, 600 - enemyr);
-        enemyy = GetRandomValue(enemyr, 1024 - enemyr);
-        }
-
-        if(IsKeyPressed(KEY_F) && !bullet)
-        {
-        bullet = true;
-        bulletx = x+bspeed;
-        bullety =y;
-
-        }
-        if(bullet){
-         bullety += bspeed;
-        }
-        // if (CheckCollisionRecs({bulletx, bullety}, obstacle)) {
-        // bullet = false;
-        // }
-        if(bullety>1024){bullet = false;}
-        if(bullet && CheckCollisionCircles(
-         Vector2{bulletx, bullety}, bulletr,
-         Vector2{enemyx, enemyy}, enemyr
-        ))
-        {
-        score += 30;
-        bullet = false;
-        enemyx = GetRandomValue(enemyx, 600-enemyx);
-        enemyy = GetRandomValue(enemyy, 1024-enemyy);
-        }
-
-        DrawCircle(x, y, radius, WHITE);
-        DrawRectangleRec(obstacle, GRAY);
-        DrawCircle(coinx, coiny, coinr, GOLD);
-        DrawCircle(enemyx, enemyy, enemyr, RED);
-        if(bullet){ 
-        DrawCircle(bulletx, bullety, bulletr, WHITE);
-        }
-        DrawText(TextFormat("Score:%d",score), 10,10, 30, YELLOW);
-        DrawText(TextFormat("Speed:%.1f",speed), 10,970, 30, WHITE);
-        DrawText(TextFormat("Health:%.d",health), 400,970, 30, RED);
-        if(speed>5){
-        DrawText(TextFormat("Speed:%.1f",speed), 10,970, 30, RED);
-        }
-        DrawFPS(500,10);
-        if(IsKeyPressed(KEY_E) || health<=0){
-        currentstate = Over;
-        }
-        }
-
-        else if(currentstate==Over){
-        ClearBackground(YELLOW);
-        DrawText(TextFormat("GAME OVER"), 190, 420, 30, BLACK);
-        DrawText(TextFormat("  Score:%d",score), 190, 480, 30, BLACK);
-        DrawText(TextFormat(" Press Enter to Restart "), 190, 520, 25, BLACK);
-
-        if(IsKeyPressed(KEY_ENTER)){
-            score=0;
-            health=100;
-            x=200, y=200;
-            bullet=false;
-            enemyx =GetRandomValue(enemyr, 600-enemyr);
-            enemyy =GetRandomValue(enemyr, 1024-enemyr);
-            
-            currentstate = Start;
-        }
-
-        }
-        EndDrawing();  
+    if(snakey[0] >= 720){
+     snakey[0] = 0;
+    }
+    if(snakey[0] < 0){ 
+    snakey[0] = 720 - gridsize;
     }
 
-    CloseWindow(); 
-    CloseAudioDevice();
-    return 0;
+    snake.x = snakex[0];
+    snake.y = snakey[0];
+
+
+    if(CheckCollisionCircleRec(
+         food,10,
+         Rectangle{float(snakex[0]), float(snakey[0]), float(gridsize), float(gridsize)}
+         )
+    ){
+      ate = true;
+    
+    }
+
+
+    if(CheckCollisionCircleRec(
+    food, 10,
+    Rectangle{float(Enemy.x[0]), float(Enemy.y[0]), float(gridsize), float(gridsize)}
+    )){
+    food.x = GetRandomValue(0, 1280/gridsize - 1) * gridsize;
+    food.y = GetRandomValue(0, 720/gridsize - 1) * gridsize;
+
+    if(Enemy.enemylength < mxlength)
+        Enemy.enemylength++;
+    }
+
+    if(ate){
+    food.x = GetRandomValue(0, 1280/gridsize - 1) * gridsize;
+    food.y = GetRandomValue(0, 720/gridsize -1) *gridsize;
+    if(length<mxlength){
+    length ++;
+    }
+    score+= GetRandomValue(1,10);
+    ate = false;
+    }
+
+    DrawCircle(food.x, food.y, 10, GOLD);
+
+
+    DrawText(TextFormat("Score: %i", score), 20, 20, 30, BLACK);
+
+    EndDrawing();
+    }
+
+    CloseWindow();
 }

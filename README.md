@@ -1,26 +1,42 @@
-# Raylib C++ Starter Template
+# 🐍 Raylib Snake-Style Enemy System (C++)
 
-Raylib C++ Starter Template for Visual Studio Code on Windows.
+A minimal enemy movement system built with Raylib + C++.
+This project demonstrates structured data design, segment following logic, and basic game-loop updates for a snake-like enemy.
 
-This demo project contains a bouncing ball raylib example program.
+# The goal is to practice:
 
-It works with raylib version 4.5.
-Tested on both Windows 10 and Windows 11.
+Struct-based game entities
 
-# Video Tutorial
+Array-driven body segments
 
-<p align="center">
-  <img src="preview.jpg" alt="" width="800">
-</p>
+Directional movement
 
-<p align="center">
-🎥 <a href="https://www.youtube.com/watch?v=PaAcVk5jUd8">Video Tutorial on YouTube</a>
-</p>
+Clean update flow inside the main loop
 
-<br>
-<br>
-<p align="center">
-| 📺 <a href="https://www.youtube.com/channel/UC3ivOTE5EgpmF2DHLBmWIWg">My YouTube Channel</a>
-| 🌍 <a href="https://www.programmingwithnick.com">My Website</a> | <br>
-</p>
+# 🎯 Features
 
+Enemy with head + body segments
+
+Dynamic length control
+
+Grid-based movement
+
+Direction vector system
+
+Simple and readable code structure
+
+Beginner-friendly game logic
+
+# 🧠 Concepts Used
+
+C++ struct for entity modeling
+
+Fixed-size arrays for body segments
+
+Vector2 for position and direction
+
+Segment follow algorithm
+
+Game loop update pattern
+
+This project focuses on logic clarity, not graphics complexity.
